@@ -19,20 +19,19 @@
 
 ## 🖼️ 游戏画面
 
-> ⚠️ **以下截图尚未上传，路径为占位符** —— 截图文件请放入 `docs/screenshots/` 目录后，删除下方 `<!-- TODO -->` 注释即可生效。
+> ✅ 已有 3 张 exe 实机截图；其余条目 **尚未上传，路径为占位符** —— 截图文件放入 `docs/screenshots/` 后，取消对应 `<!-- TODO -->` 注释即可生效。
 
 <div align="center">
 
-| 截图 | 占位路径（需替换/上传） |
+| 截图 | 状态 / 路径 |
 |:---:|:---|
-| 启动封面 · GTA7:NANKING | <!-- TODO: 已上传，可直接显示 --> <img src="game/img/boot-cover.jpg" alt="启动封面" width="420"/> |
-| 新街口 CBD · 无人机俯瞰 | <!-- TODO --> `docs/screenshots/xinjiekou-drone.png` |
-| 玄武湖 · 游船视角 | <!-- TODO --> `docs/screenshots/xuanwulake-boat.png` |
-| 紫金山 · 索道缆车与中山陵 | <!-- TODO --> `docs/screenshots/zijinshan-cable.png` |
-| 长江大桥 · 驾驶视角 | <!-- TODO --> `docs/screenshots/yangtze-bridge-drive.png` |
-| 主人公手机 · 电话/短信/相机 | <!-- TODO --> `docs/screenshots/phone-apps.png` |
-| 任务系统 · 金色信标与 HUD | <!-- TODO --> `docs/screenshots/mission-beacon.png` |
-| 雨天夜景 · 昼夜与天气系统 | <!-- TODO --> `docs/screenshots/weather-night.png` |
+| 启动画面 · GTA 封面风格（exe 实机） | <img src="docs/screenshots/boot-screen-exe.png" alt="启动画面" width="420"/> |
+| 新街口 CBD · 无人机俯瞰 + 任务信标（exe 实机） | <img src="docs/screenshots/xinjiekou-drone.png" alt="新街口无人机视角" width="420"/> |
+| 主人公手机 · 6 个 App（exe 实机） | <img src="docs/screenshots/phone-apps.png" alt="主人公手机" width="420"/> |
+| 玄武湖 · 游船视角 | <!-- TODO: 待上传 --> `docs/screenshots/xuanwulake-boat.png` |
+| 紫金山 · 索道缆车与中山陵 | <!-- TODO: 待上传 --> `docs/screenshots/zijinshan-cable.png` |
+| 长江大桥 · 驾驶视角 | <!-- TODO: 待上传 --> `docs/screenshots/yangtze-bridge-drive.png` |
+| 雨天夜景 · 昼夜与天气系统 | <!-- TODO: 待上传 --> `docs/screenshots/weather-night.png` |
 
 </div>
 

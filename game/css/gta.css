@@ -1,21 +1,48 @@
 /* ============ GTA7:NANKING HUD / 手机系统 ============ */
 
-/* ---------- 启动画面 ---------- */
-#boot{position:fixed;inset:0;z-index:120;background:radial-gradient(1200px 700px at 30% 20%,#1d2b3f 0%,#0a0f1c 55%,#05070d 100%);
+/* ---------- 启动画面（GTA 官方封面风格：拼贴海报 + 中央徽标） ---------- */
+#boot{position:fixed;inset:0;z-index:120;overflow:hidden;
+  background:#2a1745 url(../img/boot-cover.jpg) center/cover no-repeat;
   display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s}
 #boot.off{opacity:0;pointer-events:none}
-#boot-art{font-family:Georgia,"Times New Roman",serif;font-weight:900;font-size:120px;letter-spacing:.02em;
-  background:linear-gradient(180deg,#fff6d8 0%,#f4c96a 45%,#c9862c 70%,#8a5a16 100%);
+/* 四周暗角 + 底部压暗，突出中央徽标 */
+#boot-vignette{position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 50% 42%,rgba(42,23,69,0) 30%,rgba(30,14,52,.55) 78%,rgba(18,8,36,.9) 100%),
+    linear-gradient(180deg,rgba(18,8,36,.35) 0%,rgba(18,8,36,0) 22% 70%,rgba(14,6,30,.8) 100%)}
+#boot-logo{position:relative;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 18px 48px rgba(0,0,0,.6))}
+#boot-badge{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:26px 64px 30px;transform:skewX(-6deg);
+  background:linear-gradient(165deg,#ff9db8 0%,#f76a9e 26%,#d84bb0 52%,#8f3bd4 78%,#5f2bb0 100%);
+  border:5px solid #fff;border-radius:26px;
+  box-shadow:0 0 0 8px rgba(38,17,70,.92),0 0 0 12px rgba(255,255,255,.28),inset 0 2px 30px rgba(255,255,255,.35);
+  line-height:.92}
+#boot-badge .bb-row1{font-family:"Arial Black","Microsoft YaHei",sans-serif;font-weight:900;
+  font-size:88px;letter-spacing:.01em;color:#fff;
+  text-shadow:0 5px 0 rgba(70,20,110,.55)}
+#boot-badge .bb-row2{font-family:"Arial Black","Microsoft YaHei",sans-serif;font-weight:900;
+  font-size:120px;letter-spacing:.04em;
+  background:linear-gradient(180deg,#fff9e8 0%,#ffd76e 42%,#ff9a3d 72%,#f4562e 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
-  text-shadow:0 6px 40px rgba(244,201,106,.25);line-height:1}
-#boot-art .b7{font-size:64px;vertical-align:22px;margin-left:6px}
-#boot-sub{margin-top:10px;font-size:22px;letter-spacing:.55em;color:#e8d9b0;text-indent:.55em}
-#boot-tag{margin-top:6px;font-size:12px;letter-spacing:.3em;color:#8b95a8}
-#boot-go{margin-top:44px;padding:14px 54px;font-size:16px;letter-spacing:.3em;color:#0a0f1c;cursor:pointer;
-  background:linear-gradient(135deg,#fff3d0,#e8c476);border:none;border-radius:30px;font-weight:800;
-  box-shadow:0 8px 30px rgba(232,196,118,.35);transition:.25s}
-#boot-go:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(232,196,118,.5)}
-#boot-hint{margin-top:16px;font-size:11px;letter-spacing:.2em;color:#6b7688}
+  filter:drop-shadow(0 4px 0 rgba(70,20,110,.5))}
+#boot-sub{margin-top:26px;font-family:Georgia,serif;font-weight:900;font-size:30px;letter-spacing:.5em;text-indent:.5em;
+  color:#fff;text-shadow:0 2px 0 rgba(60,20,100,.8),0 0 24px rgba(255,140,200,.5)}
+#boot-tag{margin-top:8px;font-size:13px;letter-spacing:.3em;color:#f2d9ff;
+  text-shadow:0 1px 4px rgba(20,8,40,.9)}
+#boot-bottom{position:relative;display:flex;flex-direction:column;align-items:center;margin-top:44px}
+#boot-go{padding:14px 58px;font-size:16px;letter-spacing:.3em;color:#2a0f4d;cursor:pointer;
+  background:linear-gradient(135deg,#ffe8f2,#ffb7d9 55%,#ff8cc0);border:2px solid #fff;border-radius:32px;font-weight:800;
+  box-shadow:0 8px 30px rgba(255,120,190,.4),0 0 0 5px rgba(38,17,70,.85);transition:.25s}
+#boot-go:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 12px 44px rgba(255,120,190,.6),0 0 0 5px rgba(38,17,70,.85)}
+#boot-hint{margin-top:16px;font-size:11px;letter-spacing:.2em;color:#e6c9ff;text-shadow:0 1px 3px rgba(20,8,40,.9)}
+#boot-panel-strip{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-size:10px;
+  letter-spacing:.28em;color:rgba(255,220,245,.55);text-shadow:0 1px 3px rgba(20,8,40,.9)}
+@media (max-width:760px){
+  #boot-badge{padding:16px 34px 20px;border-radius:18px}
+  #boot-badge .bb-row1{font-size:52px}
+  #boot-badge .bb-row2{font-size:72px}
+  #boot-sub{font-size:18px;margin-top:16px}
+}
 
 /* ---------- 左下角 GTA HUD ---------- */
 #gta-hud{position:fixed;left:16px;bottom:52px;z-index:10;display:flex;flex-direction:column;gap:6px;pointer-events:none}

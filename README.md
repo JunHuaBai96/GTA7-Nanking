@@ -19,7 +19,7 @@
 
 ## 🖼️ 游戏画面
 
-> ✅ 已有 4 张 exe 实机截图（含 v1.2.0 新版界面布局）；其余条目 **尚未上传，路径为占位符** —— 截图放入 `docs/screenshots/` 后取消对应 `<!-- TODO -->` 注释即可生效。
+> 以下 8 张截图均已随仓库上传，可直接显示。
 
 <div align="center">
 
@@ -28,22 +28,12 @@
 | 启动画面 · GTA 封面风格（exe 实机） | <img src="docs/screenshots/boot-screen-exe.png" alt="启动画面" width="420"/> |
 | 新街口 CBD · 无人机俯瞰 + 任务信标 · v1.2.0 新布局（exe 实机） | <img src="docs/screenshots/xinjiekou-drone.png" alt="新街口无人机视角" width="420"/> |
 | 主人公手机 · 6 个 App（exe 实机） | <img src="docs/screenshots/phone-apps.png" alt="主人公手机" width="420"/> |
-| 玄武湖 · 游船视角 | <!-- TODO: 待上传 --> `docs/screenshots/xuanwulake-boat.png` |
-| 紫金山 · 索道缆车与中山陵 | <!-- TODO: 待上传 --> `docs/screenshots/zijinshan-cable.png` |
-| 长江大桥 · 驾驶视角 | <!-- TODO: 待上传 --> `docs/screenshots/yangtze-bridge-drive.png` |
-| 雨天夜景 · 昼夜与天气系统 | <!-- TODO: 待上传 --> `docs/screenshots/weather-night.png` |
+| 玄武湖 · 游船视角 | <img src="docs/screenshots/xuanwulake-boat.png" alt="玄武湖游船" width="420"/> |
+| 紫金山索道 · 高空俯瞰玄武湖与紫峰 | <img src="docs/screenshots/zijinshan-cable.png" alt="紫金山索道" width="420"/> |
+| 长江大桥 · 无人机视角 | <img src="docs/screenshots/yangtze-bridge-drive.png" alt="长江大桥" width="420"/> |
+| 雨天夜景 · 昼夜与天气系统 | <img src="docs/screenshots/weather-night.png" alt="雨天夜景" width="420"/> |
 
 </div>
-
-<!-- 截图上传后的推荐展示格式（替换上面的表格）：
-
-![启动封面](game/img/boot-cover.jpg)
-
-![新街口 CBD](docs/screenshots/xinjiekou-drone.png)
-![玄武湖游船](docs/screenshots/xuanwulake-boat.png)
-![紫金山索道](docs/screenshots/zijinshan-cable.png)
-
--->
 
 ## 网页版运行
 

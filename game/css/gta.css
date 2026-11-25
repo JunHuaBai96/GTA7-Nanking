@@ -44,18 +44,19 @@
   #boot-sub{font-size:18px;margin-top:16px}
 }
 
-/* ---------- 左下角 GTA HUD ---------- */
-#gta-hud{position:fixed;left:16px;bottom:52px;z-index:10;display:flex;flex-direction:column;gap:6px;pointer-events:none}
-#gta-money{font-size:22px;font-weight:900;letter-spacing:.04em;color:#8fe6a8;
+/* ---------- 左下角 GTA HUD（金钱/通缉 + 放大小地图；控制面板已移至右上避让） ---------- */
+#gta-hud{position:fixed;left:18px;bottom:278px;z-index:10;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+#gta-money{font-size:26px;font-weight:900;letter-spacing:.04em;color:#8fe6a8;
   text-shadow:0 2px 0 #14301c,0 0 14px rgba(46,204,113,.4);font-family:Consolas,monospace}
 #gta-money.bump{animation:mbump .5s}
 @keyframes mbump{0%{transform:scale(1)}30%{transform:scale(1.25)}100%{transform:scale(1)}}
-#gta-stars{font-size:15px;letter-spacing:2px;color:#4a5568;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+#gta-stars{font-size:17px;letter-spacing:2px;color:#4a5568;text-shadow:0 1px 3px rgba(0,0,0,.8)}
 #gta-stars.hot{color:#ff5566;text-shadow:0 0 10px rgba(255,60,80,.8)}
 #gta-stars .st-on{color:#ffd23e}
 
-#minimap{position:fixed;left:16px;bottom:104px;z-index:10;border-radius:12px;border:2px solid rgba(232,196,118,.35);
-  background:#0c1420;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+#minimap{position:fixed;left:16px;bottom:16px;z-index:10;width:340px;height:244px;border-radius:14px;
+  border:2px solid rgba(232,196,118,.45);
+  background:#0c1420;box-shadow:0 6px 24px rgba(0,0,0,.55)}
 
 #gta-mission{position:fixed;left:16px;top:16px;z-index:10;max-width:340px;background:rgba(10,15,28,.78);
   border-left:3px solid #e8c476;border-radius:0 10px 10px 0;padding:10px 14px;pointer-events:none}
@@ -198,5 +199,6 @@
 
 @media (max-width:760px){
   #phone{width:262px;height:520px}
-  #minimap{width:160px;height:114px}
+  #minimap{width:230px;height:165px}
+  #gta-hud{bottom:190px}
 }

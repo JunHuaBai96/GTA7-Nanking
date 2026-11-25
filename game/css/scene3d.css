@@ -8,9 +8,11 @@
 html,body{height:100%;overflow:hidden;background:#0a0f1c;font-family:var(--sans);color:var(--paper)}
 #gl{position:fixed;inset:0;display:block;width:100%;height:100%}
 
-/* 控制面板 */
-#panel{position:fixed;top:16px;left:16px;width:250px;background:rgba(14,21,38,.82);backdrop-filter:blur(8px);
-  border:1px solid var(--line);border-radius:14px;padding:16px;z-index:10;box-shadow:0 10px 32px rgba(0,0,0,.45)}
+/* 控制面板（右上，#hud 下方；左下角让位给小地图与金钱 HUD） */
+#panel{position:fixed;top:70px;right:16px;width:250px;background:rgba(14,21,38,.82);backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:14px;padding:16px;z-index:10;box-shadow:0 10px 32px rgba(0,0,0,.45);
+  max-height:calc(100vh - 90px);overflow-y:auto;transition:opacity .25s}
+body.phone-open #panel{opacity:0;pointer-events:none}
 #panel-title{font-size:15px;letter-spacing:.2em;color:var(--gold);margin-bottom:14px;font-weight:700}
 .ctl-group{margin-bottom:14px}
 .ctl-group:last-child{margin-bottom:0}
@@ -33,8 +35,9 @@ html,body{height:100%;overflow:hidden;background:#0a0f1c;font-family:var(--sans)
 #hud-mode{color:var(--gold)}#hud-wx{color:#9fd4c9}#hud-time{color:var(--paper);font-weight:700}
 #tips{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);font-size:12px;color:#a99e85;
   letter-spacing:.1em;background:rgba(14,21,38,.7);padding:8px 20px;border-radius:18px;z-index:10;white-space:nowrap}
-#back{position:fixed;bottom:14px;left:16px;font-size:12px;color:#a99e85;text-decoration:none;letter-spacing:.1em;
+#back{position:fixed;bottom:14px;right:16px;font-size:12px;color:#a99e85;text-decoration:none;letter-spacing:.1em;
   background:rgba(14,21,38,.7);padding:8px 16px;border-radius:18px;z-index:10;transition:.2s}
+body.phone-open #back{opacity:0;pointer-events:none}
 #back:hover{color:var(--gold)}
 
 /* 加载 */

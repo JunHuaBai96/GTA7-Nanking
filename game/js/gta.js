@@ -84,7 +84,7 @@ function drawMap(px,pz,heading){
   var cv=$("minimap");if(!cv)return;
   var g=cv.getContext("2d");
   var W=cv.width,H=cv.height,cx=W/2,cy=H/2;
-  var k=0.30; // px per meter
+  var k=0.40; // px per meter（地图放大后同步提高比例尺）
   g.clearRect(0,0,W,H);
   // 背景
   g.fillStyle="#16211a";g.fillRect(0,0,W,H);
@@ -113,29 +113,29 @@ function drawMap(px,pz,heading){
     g.lineWidth=Math.max(2,r[4]*k);
     g.beginPath();g.moveTo(wx(r[0]),wz(r[1]));g.lineTo(wx(r[2]),wz(r[3]));g.stroke();
   });
-  // 地标点
+  // 地标点（放大小地图后同步增大标记）
   MM_PTS.forEach(function(p){
     g.fillStyle=p.c;
-    g.beginPath();g.arc(wx(p.x),wz(p.z),p.s,0,7);g.fill();
+    g.beginPath();g.arc(wx(p.x),wz(p.z),p.s*1.6,0,7);g.fill();
   });
   // 任务信标
   if(started&&!completeAll&&MISSIONS[mi]){
     var m=MISSIONS[mi];
     var blink=0.6+0.4*Math.sin(performance.now()*0.005);
     g.fillStyle="rgba(255,210,62,"+blink.toFixed(2)+")";
-    g.beginPath();g.arc(wx(m.x),wz(m.z),6,0,7);g.fill();
-    g.strokeStyle="rgba(255,210,62,.5)";g.lineWidth=1.5;
-    g.beginPath();g.arc(wx(m.x),wz(m.z),10,0,7);g.stroke();
+    g.beginPath();g.arc(wx(m.x),wz(m.z),8,0,7);g.fill();
+    g.strokeStyle="rgba(255,210,62,.5)";g.lineWidth=2;
+    g.beginPath();g.arc(wx(m.x),wz(m.z),13,0,7);g.stroke();
   }
   // 玩家箭头
   var f={x:Math.sin(heading),z:Math.cos(heading)};
   g.save();g.translate(cx,cy);
   g.rotate(Math.atan2(f.x,-f.z));
   g.fillStyle="#ff5566";
-  g.beginPath();g.moveTo(0,-7);g.lineTo(5,6);g.lineTo(0,3);g.lineTo(-5,6);g.closePath();g.fill();
+  g.beginPath();g.moveTo(0,-9);g.lineTo(6.5,7.5);g.lineTo(0,4);g.lineTo(-6.5,7.5);g.closePath();g.fill();
   g.restore();
   // 北向标
-  g.fillStyle="#e8d9b0";g.font="bold 10px sans-serif";g.fillText("N",cx-3,12);
+  g.fillStyle="#e8d9b0";g.font="bold 13px sans-serif";g.fillText("N",cx-4,15);
 }
 
 /* ============ HUD ============ */

@@ -50,6 +50,7 @@ function toggle(){
   if(fullMap){exitFullMap();return;}
   open=!open;
   $("phone").classList.toggle("open",open);
+  document.body.classList.toggle("phone-open",open);
   if(!open){
     stopCall(false);
     closeView();            // 回桌面，暂停 iframe

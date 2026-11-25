@@ -1,0 +1,69 @@
+/* ============ 3D 实景控制界面 ============ */
+:root{
+  --ink:#0e1526;--ink2:#131c33;--paper:#f5efe3;--gold:#e8c476;
+  --jade:#3f9e8f;--seal:#c0392b;--line:rgba(232,196,118,.35);
+  --sans:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#0a0f1c;font-family:var(--sans);color:var(--paper)}
+#gl{position:fixed;inset:0;display:block;width:100%;height:100%}
+
+/* 控制面板 */
+#panel{position:fixed;top:16px;left:16px;width:250px;background:rgba(14,21,38,.82);backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:14px;padding:16px;z-index:10;box-shadow:0 10px 32px rgba(0,0,0,.45)}
+#panel-title{font-size:15px;letter-spacing:.2em;color:var(--gold);margin-bottom:14px;font-weight:700}
+.ctl-group{margin-bottom:14px}
+.ctl-group:last-child{margin-bottom:0}
+.ctl-label{font-size:11px;letter-spacing:.25em;color:#a99e85;margin-bottom:8px;display:flex;justify-content:space-between}
+.ctl-label span{color:var(--gold);letter-spacing:.1em;font-size:13px;font-weight:700}
+.btn-row{display:flex;flex-wrap:wrap;gap:6px}
+.ctl-btn{padding:7px 12px;font-size:12.5px;letter-spacing:.08em;color:#d8cfbc;background:rgba(19,28,51,.8);
+  border:1px solid rgba(232,196,118,.25);border-radius:16px;cursor:pointer;transition:.22s}
+.ctl-btn:hover{border-color:var(--gold);color:var(--paper)}
+.ctl-btn.active{background:linear-gradient(135deg,#f0d9a6,var(--gold));color:var(--ink);border-color:transparent;font-weight:700}
+#time-slider{width:100%;margin:2px 0 10px;appearance:none;height:4px;border-radius:2px;
+  background:linear-gradient(90deg,#1a2340,#3a5a96,#7ec3e8,#e8c476,#f08a5e,#1a2340);outline:none;cursor:pointer}
+#time-slider::-webkit-slider-thumb{appearance:none;width:16px;height:16px;border-radius:50%;background:var(--paper);
+  border:3px solid var(--gold);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+
+/* HUD */
+#hud{position:fixed;top:16px;right:16px;background:rgba(14,21,38,.82);backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:22px;padding:10px 20px;font-size:13px;letter-spacing:.12em;z-index:10;display:flex;gap:10px;align-items:center}
+#hud i{opacity:.4;font-style:normal}
+#hud-mode{color:var(--gold)}#hud-wx{color:#9fd4c9}#hud-time{color:var(--paper);font-weight:700}
+#tips{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);font-size:12px;color:#a99e85;
+  letter-spacing:.1em;background:rgba(14,21,38,.7);padding:8px 20px;border-radius:18px;z-index:10;white-space:nowrap}
+#back{position:fixed;bottom:14px;left:16px;font-size:12px;color:#a99e85;text-decoration:none;letter-spacing:.1em;
+  background:rgba(14,21,38,.7);padding:8px 16px;border-radius:18px;z-index:10;transition:.2s}
+#back:hover{color:var(--gold)}
+
+/* 加载 */
+#loading{position:fixed;inset:0;background:#0a0f1c;display:flex;align-items:center;justify-content:center;z-index:99;transition:opacity .8s}
+#loading.off{opacity:0;pointer-events:none}
+#loading-text{font-size:15px;letter-spacing:.4em;color:var(--gold);animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.5}50%{opacity:1}}
+
+@media (max-width:640px){
+  #panel{width:200px;padding:12px}
+  #tips{display:none}
+}
+
+/* ============ 手机拍照 UI ============ */
+#vf{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .18s;z-index:30;}
+#vf.on{opacity:1;}
+#vf i{position:absolute;width:56px;height:56px;border:3px solid rgba(255,255,255,.92);}
+#vf .c1{top:14vh;left:16vw;border-right:none;border-bottom:none;}
+#vf .c2{top:14vh;right:16vw;border-left:none;border-bottom:none;}
+#vf .c3{bottom:16vh;left:16vw;border-right:none;border-top:none;}
+#vf .c4{bottom:16vh;right:16vw;border-left:none;border-top:none;}
+#vf span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  color:#fff;font-size:15px;letter-spacing:.2em;text-shadow:0 1px 6px rgba(0,0,0,.6);
+  background:rgba(0,0,0,.35);padding:6px 16px;border-radius:20px;}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:40;transition:opacity .05s;}
+#flash.on{opacity:.92;}
+#photo-card{position:fixed;right:18px;bottom:64px;width:220px;background:rgba(10,14,26,.88);
+  border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:8px;z-index:30;
+  opacity:0;transform:translateY(14px);transition:all .3s;pointer-events:none;}
+#photo-card.on{opacity:1;transform:translateY(0);}
+#photo-card img{width:100%;border-radius:6px;display:block;}
+#photo-cap{color:#cfd8e6;font-size:12px;margin-top:6px;text-align:center;}

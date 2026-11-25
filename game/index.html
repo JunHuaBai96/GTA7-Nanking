@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>南京 · 云游金陵</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="浏览器里的南京观光：玄武湖、中山陵、夫子庙、明孝陵等地标打卡、拍照、答题集章。">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<script>
+/* 手机 app 内嵌（GTA7:NANKING）时隐藏「3D 实景模式」跳转，防止 iframe 里再嵌一层 3D 世界 */
+if(window.self!==window.top){
+  document.addEventListener("DOMContentLoaded",function(){
+    var a=document.querySelector('#load-note a[href$="3d.html"]');
+    if(a)a.style.display="none";
+  });
+}
+</script>
+
+<!-- ===== 加载封面 ===== -->
+<div id="load">
+  <div id="load-art"></div>
+  <div id="load-shade"></div>
+  <div id="load-main">
+    <div id="load-en">NANJING</div>
+    <div id="load-title">南 京</div>
+    <div id="load-sub">
+      <span class="zh">六朝古都 · 云游金陵 —— 地图观光 · 打卡拍照 · 答题集章</span>
+      <span class="en">Six Dynasties capital · tour, snap and stamp</span>
+    </div>
+    <div id="load-prog"><div id="load-bar"><div id="load-fill"></div></div><div id="load-text">正在整理行装…</div></div>
+    <button id="start" type="button" disabled><span class="zh">开始游览</span><span class="en">Begin</span></button>
+  </div>
+  <div id="load-note">
+    <span class="zh">电脑上用 Chrome 最好 · 全部素材本地化 · 无需联网</span>
+    <a href="./3d.html">3D 实景模式 →</a>
+    <a id="reset-save" href="javascript:void(0)">重置存档</a>
+  </div>
+</div>
+
+<!-- ===== 游戏主界面 ===== -->
+<div id="app" class="off">
+
+  <!-- 顶部 HUD -->
+  <div id="hud">
+    <div id="hud-title"><span class="zh">云游金陵</span><span class="en">NANJING</span></div>
+    <div id="hud-score"><small>得分</small><span id="score-n">0</span></div>
+    <div id="hud-stamps"><small>印章</small><span id="stamp-n">0</span>/8</div>
+    <button id="btn-tasks" type="button">行程</button>
+    <button id="btn-stamps" type="button">集章册</button>
+  </div>
+
+  <!-- 地图视图 -->
+  <div id="map-view"></div>
+  <div id="map-tip">点击亮起的地标开始打卡 · 已完成的地标可随时回访重拍</div>
+
+  <!-- 行程面板 -->
+  <div id="tasks" class="panel off">
+    <div class="panel-head"><b>行程单</b><button class="panel-x" data-close="tasks">×</button></div>
+    <div id="tasks-list"></div>
+  </div>
+
+  <!-- 集章册 -->
+  <div id="stamps-panel" class="panel off">
+    <div class="panel-head"><b>集章册</b><button class="panel-x" data-close="stamps-panel">×</button></div>
+    <div id="stamps-grid"></div>
+  </div>
+
+  <!-- 景点介绍卡 -->
+  <div id="card" class="modal off">
+    <div id="card-box">
+      <div id="card-art"></div>
+      <div id="card-head">
+        <div id="card-title"></div>
+        <div id="card-en"></div>
+      </div>
+      <div id="card-text"></div>
+      <div id="card-facts"></div>
+      <button id="card-go" type="button">进入打卡 <span class="en">Take a photo</span></button>
+    </div>
+  </div>
+
+  <!-- 拍照打卡 -->
+  <div id="photo" class="modal off">
+    <div id="photo-scene"></div>
+    <div id="viewfinder"><div class="vf-corner c1"></div><div class="vf-corner c2"></div><div class="vf-corner c3"></div><div class="vf-corner c4"></div><div id="vf-hint"></div></div>
+    <div id="photo-tip"></div>
+    <div id="photo-ctrl">
+      <button id="ph-zoom-out" type="button">－</button>
+      <button id="ph-shutter" type="button" aria-label="拍照"></button>
+      <button id="ph-zoom-in" type="button">＋</button>
+      <button id="ph-x" type="button" aria-label="退出">✕</button>
+    </div>
+    <div id="ph-result" class="off">
+      <div id="ph-stars"></div>
+      <div id="ph-score"></div>
+      <div id="ph-btns">
+        <button id="ph-retry" type="button">再拍一张</button>
+        <button id="ph-done" type="button">完成打卡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 知识问答 -->
+  <div id="quiz" class="modal off">
+    <div id="quiz-box">
+      <div id="quiz-head"><span id="quiz-loc"></span><span id="quiz-num"></span></div>
+      <div id="quiz-q"></div>
+      <div id="quiz-opts"></div>
+      <div id="quiz-fb"></div>
+    </div>
+  </div>
+
+  <!-- 打卡结算 -->
+  <div id="result" class="modal off">
+    <div id="result-box">
+      <div id="result-stamp"></div>
+      <div id="result-title">打卡完成！</div>
+      <div id="result-lines"></div>
+      <div id="result-total"></div>
+      <button id="result-go" type="button">回到地图</button>
+    </div>
+  </div>
+
+  <!-- 通关 -->
+  <div id="final" class="modal off">
+    <div id="final-box">
+      <div id="final-en">JOURNEY COMPLETE</div>
+      <div id="final-title">金陵八景 · 全线通关</div>
+      <div id="final-lines"></div>
+      <div id="final-total"></div>
+      <button id="final-again" type="button">再游一次</button>
+    </div>
+  </div>
+
+  <div id="toast" class="off"></div>
+  <div id="flash"></div>
+</div>
+
+<script src="./js/data.js"></script>
+<script src="./js/scenes.js"></script>
+<script src="./js/game.js"></script>
+</body>
+</html>

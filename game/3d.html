@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>GTA7:NANKING · 南京自由城</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./css/scene3d.css">
+<link rel="stylesheet" href="./css/gta.css">
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<!-- GTA 启动画面 -->
+<div id="boot">
+  <div id="boot-art">GTA<span class="b7">VII</span></div>
+  <div id="boot-sub">N A N K I N G</div>
+  <div id="boot-tag">金陵 · 六朝古都自由城</div>
+  <button id="boot-go" type="button">进 入 城 市</button>
+  <div id="boot-hint">自由城 南京 · 纯本地运行 · 无需联网</div>
+</div>
+
+<!-- 控制面板 -->
+<div id="panel">
+  <div id="panel-title">GTA7:NANKING</div>
+
+  <div class="ctl-group">
+    <div class="ctl-label">出行视角</div>
+    <div class="btn-row">
+      <button id="m-drone" class="ctl-btn active" type="button">无人机</button>
+      <button id="m-drive" class="ctl-btn" type="button">驾驶</button>
+      <button id="m-walk" class="ctl-btn" type="button">步行</button>
+      <button id="m-bike" class="ctl-btn" type="button">自行车</button>
+      <button id="m-ebike" class="ctl-btn" type="button">电动车</button>
+      <button id="m-cable" class="ctl-btn" type="button">索道缆车</button>
+      <button id="m-boat" class="ctl-btn" type="button">游船</button>
+    </div>
+    <div class="btn-row" style="margin-top:6px">
+      <button id="pov-toggle" class="ctl-btn" type="button">第三人称</button>
+      <button id="phone-toggle" class="ctl-btn" type="button">手机 TAB</button>
+      <button id="photo-btn" class="ctl-btn" type="button">拍照 P</button>
+    </div>
+  </div>
+
+  <div class="ctl-group">
+    <div class="ctl-label">无人机操作</div>
+    <div class="btn-row">
+      <button id="d-up" class="ctl-btn" type="button">上升 R</button>
+      <button id="d-down" class="ctl-btn" type="button">下降 F</button>
+      <button id="d-orbitL" class="ctl-btn" type="button">环绕↺ Q</button>
+      <button id="d-orbitR" class="ctl-btn" type="button">环绕↻ E</button>
+      <button id="d-in" class="ctl-btn" type="button">拉近</button>
+      <button id="d-out" class="ctl-btn" type="button">拉远</button>
+      <button id="d-auto" class="ctl-btn" type="button">自动环绕 C</button>
+    </div>
+  </div>
+
+  <div class="ctl-group">
+    <div class="ctl-label">天气</div>
+    <div class="btn-row" id="weather-row">
+      <button class="ctl-btn w active" data-w="clear" type="button">晴</button>
+      <button class="ctl-btn w" data-w="cloudy" type="button">多云</button>
+      <button class="ctl-btn w" data-w="rain" type="button">雨</button>
+      <button class="ctl-btn w" data-w="snow" type="button">雪</button>
+      <button class="ctl-btn w" data-w="fog" type="button">雾</button>
+    </div>
+  </div>
+
+  <div class="ctl-group">
+    <div class="ctl-label">时间 <span id="time-label">12:00</span></div>
+    <input id="time-slider" type="range" min="0" max="24" step="0.1" value="12">
+    <div class="btn-row">
+      <button class="ctl-btn t" data-t="6.5" type="button">清晨</button>
+      <button class="ctl-btn t" data-t="12" type="button">正午</button>
+      <button class="ctl-btn t" data-t="17.2" type="button">黄昏</button>
+      <button class="ctl-btn t" data-t="22" type="button">夜晚</button>
+      <button id="time-flow" class="ctl-btn" type="button">时间流动 ▶</button>
+    </div>
+  </div>
+
+  <div class="ctl-group">
+    <div class="ctl-label">成像</div>
+    <div class="btn-row">
+      <button id="dof-toggle" class="ctl-btn active" type="button">景深 开</button>
+    </div>
+  </div>
+</div>
+
+<!-- GTA HUD -->
+<div id="gta-hud">
+  <div id="gta-money">¥<span id="gta-money-n">0</span></div>
+  <div id="gta-stars"></div>
+</div>
+<canvas id="minimap" width="210" height="150"></canvas>
+<div id="gta-mission"><b id="gta-m-title">准备进城…</b><span id="gta-m-desc">点击「进入城市」开始任务</span></div>
+<div id="gta-toast" class="off"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <span id="hud-mode">无人机视角</span><i>·</i><span id="hud-wx">晴</span><i>·</i><span id="hud-time">12:00</span>
+</div>
+<div id="tips">无人机：拖动旋转 · 滚轮缩放 · WASD 平移　|　驾驶：W/S 油门刹车 · A/D 转向 · 空格急停</div>
+<a id="back" href="./index.html">← 云游金陵</a>
+
+<!-- 手机拍照 UI -->
+<div id="vf"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><span>拍照中…</span></div>
+<div id="flash"></div>
+<div id="photo-card"><img id="photo-img" alt="照片"><div id="photo-cap">已保存到相册 · <b id="photo-n">0</b> 张</div></div>
+
+<!-- 手机 -->
+<div id="phone">
+  <div class="ph-notch"></div>
+  <div class="ph-screen">
+    <div class="ph-status"><span id="ph-clock">12:00</span><b>GTA7</b><span>86%</span></div>
+    <div class="ph-body">
+
+      <!-- 桌面 -->
+      <div class="ph-view" id="ph-home"><div class="ph-home" id="ph-appgrid"></div></div>
+
+      <!-- 云游金陵 app -->
+      <div class="ph-view off" id="ph-app-map">
+        <div class="ph-top"><button class="ph-back">←</button><b>云游金陵</b><button id="ph-map-expand" class="ph-expand">全屏</button></div>
+        <div id="ph-map-frame-wrap"><iframe id="ph-map-frame" data-src="./index.html" title="云游金陵"></iframe></div>
+      </div>
+
+      <!-- 电话 -->
+      <div class="ph-view off" id="ph-app-call">
+        <div id="call-list" style="display:flex;flex-direction:column;flex:1;min-height:0">
+          <div class="ph-top"><button class="ph-back">←</button><b>电话</b></div>
+          <div class="ph-list" id="ph-contactlist"></div>
+        </div>
+        <div id="call-face" class="off" style="display:flex;flex-direction:column;flex:1;min-height:0">
+          <div class="call-face">
+            <div class="call-avatar" id="call-avatar" style="background:#3a4658">🔧</div>
+            <div class="call-name" id="call-name"></div>
+            <div class="call-state" id="call-state">正在呼叫…</div>
+            <div class="call-sub" id="call-sub"></div>
+          </div>
+          <button id="call-end" type="button">挂断</button>
+        </div>
+      </div>
+
+      <!-- 短信 -->
+      <div class="ph-view off" id="ph-app-sms">
+        <div id="ph-smslist" style="display:flex;flex-direction:column;flex:1;min-height:0">
+          <div class="ph-top"><button class="ph-back">←</button><b>短信</b></div>
+          <div class="ph-list" id="ph-smslist-inner"></div>
+        </div>
+        <div id="sms-chat" class="off" style="display:flex;flex-direction:column;flex:1;min-height:0">
+          <div class="ph-top"><button id="sms-chat-back">←</button><b id="sms-chat-name"></b></div>
+          <div class="sms-chat" id="sms-chat-box"></div>
+          <div class="sms-input"><input id="sms-in" type="text" placeholder="输入短信…" maxlength="120"><button id="sms-send" type="button">发送</button></div>
+        </div>
+      </div>
+
+      <!-- 相机 -->
+      <div class="ph-view off" id="ph-app-cam">
+        <div class="ph-top"><button class="ph-back">←</button><b>相机</b></div>
+        <div class="ph-tabs"><button id="cam-shoot" type="button" class="active">拍照</button><button id="cam-gal" type="button">相册</button></div>
+        <div id="cam-shootview" style="display:flex;flex-direction:column;flex:1;min-height:0">
+          <div class="cam-face">
+            <div class="cam-count" id="cam-count">已存 0 张</div>
+            <div class="cam-ring" id="cam-ring" title="快门"></div>
+            <div class="cam-hint">需步行模式 · 自动切换<br>照片同步存入相册与桌面相册卡</div>
+          </div>
+        </div>
+        <div id="cam-galview" class="off" style="display:flex;flex-direction:column;flex:1;min-height:0">
+          <div class="ph-gallery" id="ph-gallery"></div>
+        </div>
+        <div class="ph-viewer off" id="ph-viewer"><img id="viewer-img" alt="照片"><button id="viewer-close" type="button">关闭</button></div>
+      </div>
+
+      <!-- 关于 -->
+      <div class="ph-view off" id="ph-app-about">
+        <div class="ph-top"><button class="ph-back">←</button><b>关于手机</b></div>
+        <div class="about-face">
+          <b>GTA7:NANKING OS</b>
+          <div class="v">版本 7.0 · 金陵定制版</div>
+          <ul>
+            <li>自由城：新街口 CBD · 玄武湖 · 紫金山</li>
+            <li>出行：驾驶 / 步行 / 骑行 / 游船 / 缆车 / 无人机</li>
+            <li>任务：跟随金色信标，完成后有现金奖励</li>
+            <li>拍照：步行模式按 P 或使用相机 app</li>
+            <li>存档：金钱与任务进度自动保存</li>
+          </ul>
+          <p style="margin-top:14px;color:#6b7688">本机为城中主角随身设备，与场景实时联动。</p>
+        </div>
+      </div>
+
+    </div>
+    <div class="ph-homebar" id="ph-homebar"><i></i></div>
+  </div>
+</div>
+
+<!-- 云游金陵全屏遮罩 -->
+<div id="ph-fullmask" class="off">
+  <div id="ph-full-top"><button id="ph-full-back" type="button">← 退出全屏</button><b>云游金陵 · 全屏</b></div>
+  <div id="ph-full-frame-wrap"><iframe id="ph-full-frame" title="云游金陵全屏"></iframe></div>
+</div>
+
+<div id="loading"><div id="loading-text">GTA7:NANKING 正在装载…</div></div>
+
+<script src="./js/lib/three.min.js"></script>
+<script src="./js/city3d.js"></script>
+<script src="./js/scene3d.js"></script>
+<script src="./js/gta.js"></script>
+<script src="./js/phone.js"></script>
+</body>
+</html>

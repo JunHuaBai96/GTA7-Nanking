@@ -8,7 +8,7 @@
 
 `Three.js r159` · `Neutralino.js` · Windows 桌面版 + 网页版 · 无需联网
 
-[![Release](https://img.shields.io/badge/Release-v1.1.0-e879a8)](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)
+[![Release](https://img.shields.io/badge/Release-v1.2.0-e879a8)](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-5f2bb0)](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)
 
 </div>
@@ -19,14 +19,14 @@
 
 ## 🖼️ 游戏画面
 
-> ✅ 已有 3 张 exe 实机截图；其余条目 **尚未上传，路径为占位符** —— 截图文件放入 `docs/screenshots/` 后，取消对应 `<!-- TODO -->` 注释即可生效。
+> ✅ 已有 4 张 exe 实机截图（含 v1.2.0 新版界面布局）；其余条目 **尚未上传，路径为占位符** —— 截图放入 `docs/screenshots/` 后取消对应 `<!-- TODO -->` 注释即可生效。
 
 <div align="center">
 
 | 截图 | 状态 / 路径 |
 |:---:|:---|
 | 启动画面 · GTA 封面风格（exe 实机） | <img src="docs/screenshots/boot-screen-exe.png" alt="启动画面" width="420"/> |
-| 新街口 CBD · 无人机俯瞰 + 任务信标（exe 实机） | <img src="docs/screenshots/xinjiekou-drone.png" alt="新街口无人机视角" width="420"/> |
+| 新街口 CBD · 无人机俯瞰 + 任务信标 · v1.2.0 新布局（exe 实机） | <img src="docs/screenshots/xinjiekou-drone.png" alt="新街口无人机视角" width="420"/> |
 | 主人公手机 · 6 个 App（exe 实机） | <img src="docs/screenshots/phone-apps.png" alt="主人公手机" width="420"/> |
 | 玄武湖 · 游船视角 | <!-- TODO: 待上传 --> `docs/screenshots/xuanwulake-boat.png` |
 | 紫金山 · 索道缆车与中山陵 | <!-- TODO: 待上传 --> `docs/screenshots/zijinshan-cable.png` |
@@ -57,7 +57,7 @@ python -m http.server 8412
 
 ## Windows 桌面版
 
-见 [GitHub Releases](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)：下载 `GTA7-Nanking-v1.1.0-win64.zip`，解压后双击 `Start-GTA7-Nanking.cmd`。
+见 [GitHub Releases](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)：下载 `GTA7-Nanking-v1.2.0-win64.zip`，解压后双击 `Start-GTA7-Nanking.cmd`。
 
 技术栈：Neutralino.js（系统 WebView2 承载，exe 仅 2.4MB）。
 
@@ -75,6 +75,7 @@ python -m http.server 8412
 - **纯本地运行**：Three.js 与全部纹理程序化生成，零外部请求
 - **小体积桌面版**：Neutralino 打包，exe 仅 2.4MB，无需安装运行时（依赖系统 WebView2）
 - **启动封面**：GTA 系列官方封面风格的南京地标拼贴海报（中山陵 / 夫子庙 / 明城墙 / 玄武湖 / 长江大桥 / 紫峰天际线）
+- **清晰 HUD 布局**：任务面板左上 · 放大小地图+金钱通缉左下 · 控制面板右上，打开手机自动避让，零遮挡
 - **完整开放世界系统**：交通 AI、天气昼夜、多载具、手机生态、存档（localStorage 自动保存）
 
 ## 目录结构
@@ -90,4 +91,4 @@ docs/         截图等展示资源（screenshots/ 目录待上传）
 - 桌面版需 Microsoft Edge WebView2 Runtime（Win10/11 一般自带）
 - 部分低端核显建议保持默认 ANGLE d3d9 渲染（启动脚本已内置）
 
-—— JunHuaBai96 · v1.1.0
+—— JunHuaBai96 · v1.2.0

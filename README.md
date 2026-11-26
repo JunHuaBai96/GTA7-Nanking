@@ -8,7 +8,7 @@
 
 `Three.js r159` · `Neutralino.js` · Windows 桌面版 + 网页版 · 无需联网
 
-[![Release](https://img.shields.io/badge/Release-v1.2.0-e879a8)](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)
+[![Release](https://img.shields.io/badge/Release-v1.3.0-e879a8)](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-5f2bb0)](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)
 
 </div>
@@ -26,7 +26,8 @@
 | 截图 | 状态 / 路径 |
 |:---:|:---|
 | 启动画面 · GTA 封面风格（exe 实机） | <img src="docs/screenshots/boot-screen-exe.png" alt="启动画面" width="420"/> |
-| 新街口 CBD · 无人机俯瞰 + 任务信标 · v1.2.0 新布局（exe 实机） | <img src="docs/screenshots/xinjiekou-drone.png" alt="新街口无人机视角" width="420"/> |
+| 新街口 CBD · 无人机俯瞰 + 任务信标（exe 实机） | <img src="docs/screenshots/xinjiekou-drone.png" alt="新街口无人机视角" width="420"/> |
+| 南京街头美食摊 · 夜景（E 键购买，v1.3.0 实机） | <img src="docs/screenshots/street-food.png" alt="街头美食摊" width="420"/> |
 | 主人公手机 · 6 个 App（exe 实机） | <img src="docs/screenshots/phone-apps.png" alt="主人公手机" width="420"/> |
 | 玄武湖 · 游船视角 | <img src="docs/screenshots/xuanwulake-boat.png" alt="玄武湖游船" width="420"/> |
 | 紫金山索道 · 高空俯瞰玄武湖与紫峰 | <img src="docs/screenshots/zijinshan-cable.png" alt="紫金山索道" width="420"/> |
@@ -47,16 +48,20 @@ python -m http.server 8412
 
 ## Windows 桌面版
 
-见 [GitHub Releases](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)：下载 `GTA7-Nanking-v1.2.0-win64.zip`，解压后双击 `Start-GTA7-Nanking.cmd`。
+见 [GitHub Releases](https://github.com/JunHuaBai96/GTA7-Nanking/releases/latest)：下载 `GTA7-Nanking-v1.3.0-win64.zip`，解压后双击 `Start-GTA7-Nanking.cmd`。
 
 技术栈：Neutralino.js（系统 WebView2 承载，exe 仅 2.4MB）。
 
 ## 🎮 核心玩法
 
 - **任务系统**：跟随金色信标完成 6 个任务（打卡新街口 → 专车接驾 → 玄武湖泛舟 → 索道登顶 → 鸡鸣寺祈福 → 回城），赚取现金，全通解锁自由模式
+- **情境交互（E 键）**：靠近座驾/码头/索道站按 E 直接上车/登船/乘缆车，载具内按 E 下来；鼠标拖动自由环视
+- **声音**：程序化 BGM（M 键开关）+ 车载广播 3 个电台（R 键换台，含语音播报的交通广播）
+- **消费**：5 个南京街头美食摊（E 键购买，60 秒移速加成）+ 手机「翻牌乐园」小游戏（门票 ¥50 / 大奖 ¥300）
+- **语音通话**：电话支持拨打 / 挂断 / 语音通话（离线中文语音 + 字幕），可呼 114 查号台
 - **出行视角（7 种）**：无人机（R/F 升降、Q/E 环绕、C 自动环绕）/ 驾驶 / 步行 / 自行车 / 电动车 / 索道缆车 / 游船，V 键切换第一/第三人称
-- **交通**：信号周期红绿灯、NPC 车流跟车避让、行人按灯过街、转弯限速
-- **手机（TAB）**：云游金陵 2D 打卡游戏、电话（通话界面）、短信（自动回复）、相机（拍照+相册）、任务简报
+- **交通**：信号周期红绿灯、NPC 车流跟车避让、行人按灯过街、转弯限速；NPC 遇玩家刹停、动态碰撞体防穿模
+- **手机（TAB）**：云游金陵 2D 打卡游戏、电话（语音通话）、短信（自动回复）、相机（拍照+相册）、翻牌乐园小游戏、任务简报
 - **拍照**：步行模式按 P，照片存入相册
 - **天气/昼夜**：晴/多云/雨/雪/雾 × 24 小时关键帧光照，时间可流动
 
@@ -66,7 +71,8 @@ python -m http.server 8412
 - **小体积桌面版**：Neutralino 打包，exe 仅 2.4MB，无需安装运行时（依赖系统 WebView2）
 - **启动封面**：GTA 系列官方封面风格的南京地标拼贴海报（中山陵 / 夫子庙 / 明城墙 / 玄武湖 / 长江大桥 / 紫峰天际线）
 - **清晰 HUD 布局**：任务面板左上 · 放大小地图+金钱通缉左下 · 控制面板右上，打开手机自动避让，零遮挡
-- **完整开放世界系统**：交通 AI、天气昼夜、多载具、手机生态、存档（localStorage 自动保存）
+- **完整开放世界系统**：交通 AI、天气昼夜、多载具、手机生态、消费经济、存档（localStorage 自动保存）
+- **零音频资源**：BGM 与电台全部 WebAudio 程序化生成，语音通话用系统离线 TTS
 
 ## 目录结构
 
@@ -81,4 +87,4 @@ docs/         截图等展示资源（screenshots/ 目录待上传）
 - 桌面版需 Microsoft Edge WebView2 Runtime（Win10/11 一般自带）
 - 部分低端核显建议保持默认 ANGLE d3d9 渲染（启动脚本已内置）
 
-—— JunHuaBai96 · v1.2.0
+—— JunHuaBai96 · v1.3.0

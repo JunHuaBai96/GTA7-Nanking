@@ -103,12 +103,13 @@
 <canvas id="minimap" width="340" height="244"></canvas>
 <div id="gta-mission"><b id="gta-m-title">准备进城…</b><span id="gta-m-desc">点击「进入城市」开始任务</span></div>
 <div id="gta-toast" class="off"></div>
+<div id="interact-tip"></div>
 
 <!-- HUD -->
 <div id="hud">
   <span id="hud-mode">无人机视角</span><i>·</i><span id="hud-wx">晴</span><i>·</i><span id="hud-time">12:00</span>
 </div>
-<div id="tips">无人机：拖动旋转 · 滚轮缩放 · WASD 平移　|　驾驶：W/S 油门刹车 · A/D 转向 · 空格急停</div>
+<div id="tips">W/S 前进 · A/D 转向 · E 上车/登船/乘缆车/买小吃 · TAB 手机 · M 音乐</div>
 <a id="back" href="./index.html">← 云游金陵</a>
 
 <!-- 手机拍照 UI -->
@@ -179,17 +180,29 @@
         <div class="ph-viewer off" id="ph-viewer"><img id="viewer-img" alt="照片"><button id="viewer-close" type="button">关闭</button></div>
       </div>
 
+      <!-- 翻牌乐园（小游戏） -->
+      <div class="ph-view off" id="ph-app-game">
+        <div class="ph-top"><button class="ph-back">←</button><b>翻牌乐园</b></div>
+        <div class="game-face">
+          <div id="ph-game-status">门票 ¥50 · 45 秒内全部配对成功奖励 ¥300</div>
+          <div id="ph-game-grid"></div>
+          <button id="ph-game-start" type="button">开始游戏（¥50）</button>
+        </div>
+      </div>
+
       <!-- 关于 -->
       <div class="ph-view off" id="ph-app-about">
         <div class="ph-top"><button class="ph-back">←</button><b>关于手机</b></div>
         <div class="about-face">
           <b>GTA7:NANKING OS</b>
-          <div class="v">版本 7.0 · 金陵定制版</div>
+          <div class="v">版本 7.1 · 金陵定制版</div>
           <ul>
             <li>自由城：新街口 CBD · 玄武湖 · 紫金山</li>
-            <li>出行：驾驶 / 步行 / 骑行 / 游船 / 缆车 / 无人机</li>
+            <li>出行：E 键上车/登船/乘缆车，步行 / 骑行 / 无人机</li>
+            <li>电台：载具内自动开播，R 键换台，M 键音乐开关</li>
+            <li>电话：支持拨打 / 挂断 / 语音通话（离线语音）</li>
+            <li>消费：街头美食摊按 E 品尝 · 翻牌乐园赢现金</li>
             <li>任务：跟随金色信标，完成后有现金奖励</li>
-            <li>拍照：步行模式按 P 或使用相机 app</li>
             <li>存档：金钱与任务进度自动保存</li>
           </ul>
           <p style="margin-top:14px;color:#6b7688">本机为城中主角随身设备，与场景实时联动。</p>
@@ -210,6 +223,7 @@
 <div id="loading"><div id="loading-text">GTA7:NANKING 正在装载…</div></div>
 
 <script src="./js/lib/three.min.js"></script>
+<script src="./js/audio.js"></script>
 <script src="./js/city3d.js"></script>
 <script src="./js/scene3d.js"></script>
 <script src="./js/gta.js"></script>

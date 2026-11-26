@@ -24,6 +24,11 @@ var CONTACTS=[
   lines:["缆车整点双向对开，单程约十五分钟。","山顶观景台能望到紫峰和长江大桥。","中山陵台阶有392级，量力而行。"]}
 ];
 
+/* 查号台（拨号盘空号/手动呼叫时接入） */
+var OP={id:"op",name:"南京查号台 114",av:"☎️",bg:"#4a5a6e",num:"114",
+  hello:"您好，南京 114 号码百事通，请问要查什么？",
+  lines:["为您查询到：德基广场，中山路 18 号。","紫金山索道站：025-8443-1188。","玄武湖游船码头：025-8321-7766。","如需人工服务请稍后再拨。"]};
+
 /* ============ 短信状态（localStorage 持久化） ============ */
 var SMSKEY="gta7_nanking_sms";
 var sms={};                 // {contactId:[{who:"them"/"me",txt}]}
@@ -51,12 +56,13 @@ function toggle(){
   open=!open;
   $("phone").classList.toggle("open",open);
   document.body.classList.toggle("phone-open",open);
+  window.NJAUDIO&&window.NJAUDIO.unlock&&window.NJAUDIO.unlock();
   if(!open){
     stopCall(false);
     closeView();            // 回桌面，暂停 iframe
   }
 }
-var VIEW_ID={home:"ph-home",map:"ph-app-map",call:"ph-app-call",sms:"ph-app-sms",cam:"ph-app-cam",about:"ph-app-about"};
+var VIEW_ID={home:"ph-home",map:"ph-app-map",call:"ph-app-call",sms:"ph-app-sms",cam:"ph-app-cam",about:"ph-app-about",game:"ph-app-game"};
 function showView(v){
   for(var k in VIEW_ID)$(VIEW_ID[k]).classList.add("off");
   $(VIEW_ID[v]).classList.remove("off");
@@ -84,6 +90,8 @@ function openApp(id){
     showView("cam");renderCam();
   }else if(id==="about"){
     showView("about");
+  }else if(id==="game"){
+    showView("game");renderGame();
   }else if(id==="gta"){
     // 伪 app：打开任务简报
     var m=window.GTA&&window.GTA.mission();
@@ -103,6 +111,7 @@ function renderHome(){
     {id:"sms",ic:"💬",cls:"ic-sms",label:"短信",badge:unread>0?unread:false},
     {id:"cam",ic:"📷",cls:"ic-cam",label:"相机",badge:false},
     {id:"gta",ic:"🌆",cls:"ic-gta",label:"任务简报",badge:false},
+    {id:"game",ic:"🎮",cls:"ic-game",label:"翻牌乐园",badge:false},
     {id:"about",ic:"ℹ️",cls:"ic-about",label:"关于手机",badge:false}
   ];
   var g=$("ph-appgrid");
@@ -155,35 +164,40 @@ function renderContacts(){
   };
 }
 function startCall(cid,generic){
-  var c=CONTACTS.filter(function(x){return x.id===cid;})[0];
+  var c=generic?OP:CONTACTS.filter(function(x){return x.id===cid;})[0];
   curCall=c;callSec=0;
   $("call-list").classList.add("off");
   $("call-face").classList.remove("off");
   var av=$("call-avatar");av.textContent=c.av;av.style.background=c.bg;
-  $("call-name").textContent=generic?"查号台 "+dialNum:c.name;
+  $("call-name").textContent=generic?("查号台 "+dialNum):c.name;
   $("call-state").textContent="正在呼叫…";
   $("call-sub").textContent="";
   showView("call");
-  var waited=false;
+  window.NJAUDIO&&window.NJAUDIO.sfx("dial");       // 拨号音
+  setTimeout(function(){window.NJAUDIO&&window.NJAUDIO.sfx("ringback");},300);
   setTimeout(function(){
     if(curCall!==c)return;
     $("call-state").textContent="通话中 00:00";
     $("call-sub").textContent=c.hello;
-    waited=true;
+    // 语音通话：对方开口（离线 TTS，不可用时仅字幕）
+    window.NJAUDIO&&window.NJAUDIO.speak(c.hello,{rate:1.02});
     callTimer=setInterval(function(){
       callSec++;
       var m=Math.floor(callSec/60),s2=callSec%60;
       $("call-state").textContent="通话中 "+(m<10?"0":"")+m+":"+(s2<10?"0":"")+s2;
-      // 每 6 秒播一句台词
+      // 每 6 秒播一句台词（语音 + 字幕）
       var li=Math.floor(callSec/6)-1;
       if(li>=0&&li<c.lines.length&&callSec%6===0){
         $("call-sub").textContent=c.lines[li];
+        window.NJAUDIO&&window.NJAUDIO.speak(c.lines[li],{rate:1.02});
       }
     },1000);
   },1800);
 }
 function stopCall(back){
   clearInterval(callTimer);callTimer=null;curCall=null;
+  window.NJAUDIO&&window.NJAUDIO.stopSpeak();       // 挂断即静音对方
+  window.NJAUDIO&&window.NJAUDIO.sfx("busy");
   $("call-face").classList.add("off");
   $("call-list").classList.remove("off");
   if(back!==false)showView("call");
@@ -312,6 +326,82 @@ function shoot(){
   setTimeout(renderCam,1400);
 }
 
+/* ============ 翻牌乐园（小游戏 · 消费场景） ============ */
+var gDeck=[],gFlip=[],gDone=[],gMoves=0,gTimer=null,gLeft=0,gPlaying=false;
+var GAME_EMO=["🦆","🍜","🗼","⛰️","🛶","🏯","🚡","🌆"];
+function renderGame(){
+  var st=$("ph-game-status");
+  var area=$("ph-game-grid");
+  var btn=$("ph-game-start");
+  btn.style.display=gPlaying?"none":"block";
+  if(!gPlaying){
+    st.textContent="门票 ¥50 · 45 秒内全部配对成功奖励 ¥300";
+    area.innerHTML='<div class="ph-empty">8 对南京风物翻牌<br>凭任务奖励来玩，赢多输少靠记性</div>';
+    return;
+  }
+  btn.style.display="none";
+  area.innerHTML=gDeck.map(function(e,i){
+    var cls="gcard"+(gDone[i]?" done":"")+(gFlip.indexOf(i)>=0?" open":"");
+    return '<div class="'+cls+'" data-i="'+i+'">'+(gDone[i]||gFlip.indexOf(i)>=0?e:"❓")+'</div>';
+  }).join("");
+  area.querySelectorAll(".gcard").forEach(function(el){
+    el.onclick=function(){gamePick(+el.getAttribute("data-i"));};
+  });
+}
+function gamePick(i){
+  if(!gPlaying||gDone[i]||gFlip.indexOf(i)>=0||gFlip.length>=2)return;
+  gFlip.push(i);
+  window.NJAUDIO&&window.NJAUDIO.sfx("blip");
+  renderGame();
+  if(gFlip.length<2)return;
+  gMoves++;
+  var a=gFlip[0],b=gFlip[1];
+  if(gDeck[a]===gDeck[b]){
+    gDone[a]=gDone[b]=true;gFlip=[];
+    window.NJAUDIO&&window.NJAUDIO.sfx("cash");
+    renderGame();
+    if(gDone.filter(function(x){return x;}).length===gDeck.length){
+      gPlaying=false;clearInterval(gTimer);
+      window.GTA&&window.GTA.pay(300,"翻牌乐园 · 通关大奖");
+      $("ph-game-status").textContent="🎉 全部配对！奖励 ¥300 已到账";
+      $("ph-game-start").style.display="block";
+      $("ph-game-start").textContent="再来一局（¥50）";
+    }
+  }else{
+    setTimeout(function(){
+      gFlip=[];if(gPlaying)renderGame();
+    },700);
+  }
+}
+function gameStart(){
+  if(gPlaying)return;
+  if(!window.GTA||!window.GTA.spend(50,"翻牌乐园 · 门票"))return;
+  var deck=GAME_EMO.concat(GAME_EMO);
+  // 洗牌
+  for(var i=deck.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=deck[i];deck[i]=deck[j];deck[j]=t;
+  }
+  gDeck=deck;gFlip=[];gDone=[];gMoves=0;gPlaying=true;gLeft=45;
+  $("ph-game-start").style.display="none";
+  renderGame();
+  var st=$("ph-game-status");
+  st.textContent="⏱ 剩余 "+gLeft+" 秒";
+  clearInterval(gTimer);
+  gTimer=setInterval(function(){
+    gLeft--;
+    if(gLeft<=0){
+      clearInterval(gTimer);gPlaying=false;
+      st.textContent="⏰ 时间到 · 下次手气更好";
+      $("ph-game-start").style.display="block";
+      $("ph-game-start").textContent="再来一局（¥50）";
+      renderGame();
+      return;
+    }
+    st.textContent="⏱ 剩余 "+gLeft+" 秒 · 已翻 "+gMoves+" 次";
+  },1000);
+}
+
 /* ============ 云游金陵 iframe ============ */
 function enterFullMap(){
   var f=$("ph-map-frame");
@@ -342,6 +432,9 @@ function build(){
   $("cam-gal").onclick=function(){camTab="gal";renderCam();};
   $("cam-ring").onclick=shoot;
   $("viewer-close").onclick=function(){$("ph-viewer").classList.add("off");};
+  // 翻牌乐园
+  var gb=$("ph-game-start");
+  if(gb)gb.onclick=gameStart;
   // 通话挂断
   $("call-end").onclick=function(){stopCall(true);};
   // home 顶栏时钟持续刷新

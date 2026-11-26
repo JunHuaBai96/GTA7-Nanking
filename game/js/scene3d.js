@@ -174,7 +174,7 @@ CITY.mats.snow.forEach(function(o){o.base=o.m.color.clone();});
 /* ============ 玩家车辆 ============ */
 var carRef=CITY._makeCar(0xc0392b,false);
 var car=carRef.g,wheels=carRef.wheels;
-car.position.set(-150,0.06,18);
+car.position.set(25,0.06,18);
 car.rotation.y=Math.PI/2;
 scene.add(car);
 var headL=new THREE.SpotLight(0xfff2c4,0,70,0.55,0.55,1.1);
@@ -183,7 +183,7 @@ var headR=new THREE.SpotLight(0xfff2c4,0,70,0.55,0.55,1.1);
 headR.position.set(-0.6,0.9,2.2);headR.target.position.set(-0.6,0,20);car.add(headR);car.add(headR.target);
 
 /* ============ 玩家角色：步行 / 自行车 / 电动车 / 游船 ============ */
-var walkAv=CITY._person(-120,27,{noReg:true,still:true});
+var walkAv=CITY._person(22,18,{noReg:true,still:true});
 walkAv.g.visible=false;
 var bikeAv=CITY._makeRide("bike");bikeAv.g.visible=false;scene.add(bikeAv.g);
 var ebikeAv=CITY._makeRide("ebike");ebikeAv.g.visible=false;scene.add(ebikeAv.g);
@@ -195,7 +195,7 @@ var ME_CFG={
   ebike: {acc:11,max:14, turn:1.9,r:0.7, eye:1.58,back:7.6,up:3.6},
   boat:  {acc:4.5,max:6.5,turn:1.25,r:1.4,eye:2.05,back:12,up:5.2}
 };
-var me={pos:new THREE.Vector3(-120,0,27),heading:Math.PI/2,speed:0,ph:0};
+var me={pos:new THREE.Vector3(22,0,18),heading:Math.PI/2,speed:0,ph:0};
 var pov="third";           // 第三/第一人称
 var autoOrbit=false;       // 无人机自动环绕
 
@@ -254,16 +254,21 @@ var drive={speed:0,heading:Math.PI/2};
 var camTrans={active:false,t:0,dur:1.6,fromP:new THREE.Vector3(),fromQ:new THREE.Quaternion()};
 var keys={};
 var dragging=false,lastX=0,lastY=0;
+var camYaw=0,camPitch=0;      // 鼠标环视偏移（非无人机模式）
 
 canvas.addEventListener("pointerdown",function(e){
-  if(mode!=="drone")return;
   dragging=true;lastX=e.clientX;lastY=e.clientY;
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener("pointermove",function(e){
-  if(!dragging||mode!=="drone")return;
-  drone.tTheta-=(e.clientX-lastX)*0.006;
-  drone.tPhi=Math.max(0.14,Math.min(1.45,drone.tPhi+(e.clientY-lastY)*0.004));
+  if(!dragging)return;
+  if(mode==="drone"){
+    drone.tTheta-=(e.clientX-lastX)*0.006;
+    drone.tPhi=Math.max(0.14,Math.min(1.45,drone.tPhi+(e.clientY-lastY)*0.004));
+  }else{
+    camYaw-=(e.clientX-lastX)*0.007;
+    camPitch=Math.max(-0.85,Math.min(0.85,camPitch+(e.clientY-lastY)*0.0045));
+  }
   lastX=e.clientX;lastY=e.clientY;
 });
 canvas.addEventListener("pointerup",function(){dragging=false;});
@@ -281,10 +286,19 @@ window.addEventListener("keydown",function(e){
   if(e.code==="Tab"){e.preventDefault();window.PHONE.toggle();return;}
   keys[e.code]=true;
   if(e.code==="Space")e.preventDefault();
-  if(e.code==="KeyV"&&mode!=="drone"&&mode!=="cable")togglePov();
+  if(e.code==="KeyM"){window.NJAUDIO&&window.NJAUDIO.bgmToggle();return;}
+  if(e.code==="KeyV"&&mode!=="drone")togglePov();
   if(e.code==="KeyC"&&mode==="drone")toggleAutoOrbit();
   if(e.code==="KeyP")takePhoto();
-  if(mode==="cable"&&["KeyW","KeyA","KeyS","KeyD"].indexOf(e.code)>=0)exitCable();
+  if(e.code==="KeyE"&&interact){           // 情境交互：上下车/船/缆车、购买
+    var fn=interact.fn;var pre=interact;
+    fn();
+    if(pre.kind!=="walk")window.NJAUDIO&&window.NJAUDIO.sfx("door");
+    return;
+  }
+  if((mode==="drive"||mode==="bike"||mode==="ebike"||mode==="boat"||mode==="cable")&&e.code==="KeyR"){
+    window.NJAUDIO&&window.NJAUDIO.radioNext();return;
+  }
 });
 window.addEventListener("keyup",function(e){keys[e.code]=false;});
 
@@ -312,11 +326,24 @@ function resolveCollide(px,pz,r){
   }
   for(i=0;i<CITY.colliders.length;i++){
     var cd=CITY.colliders[i];
+    if(cd.ex&&px>cd.ex[0]&&px<cd.ex[1]&&pz>cd.ex[2]&&pz<cd.ex[3])continue;  // 码头豁免区
     dx=px-cd.x;dz=pz-cd.z;
     d=Math.hypot(dx,dz);
     if(d<cd.r+r){
       var pu=cd.r+r-d+0.05;
       px+=dx/(d||1)*pu;pz+=dz/(d||1)*pu;
+    }
+  }
+  // 动态碰撞体（NPC 车辆/骑行者），防止人车互相穿模
+  var dyn=CITY.dyn||[];
+  for(i=0;i<dyn.length;i++){
+    var dn=dyn[i];
+    if(px<dn.x-6||px>dn.x+6||pz<dn.z-6||pz>dn.z+6)continue;
+    dx=px-dn.x;dz=pz-dn.z;
+    d=Math.hypot(dx,dz);
+    if(d<dn.r+r&&d>1e-4){
+      var pd=dn.r+r-d+0.05;
+      px+=dx/d*pd;pz+=dz/d*pd;
     }
   }
   return [px,pz];
@@ -362,13 +389,14 @@ function updateCar(dt){
 var ME_AV={walk:walkAv,bike:bikeAv,ebike:ebikeAv,boat:boatAv};
 function updateMe(dt){
   var cfg=ME_CFG[mode];
+  var bf=(performance.now()<buffUntil)?1.15:1;    // 美食饱腹 buff
   var acc=0;
-  if(keys["KeyW"]||keys["ArrowUp"])acc=cfg.acc;
+  if(keys["KeyW"]||keys["ArrowUp"])acc=cfg.acc*bf;
   if(keys["KeyS"]||keys["ArrowDown"])acc=-cfg.acc*0.7;
   if(keys["Space"])me.speed*=Math.max(0,1-dt*5);
   if(keys["ShiftLeft"]||keys["ShiftRight"])acc*=1.3;
   me.speed+=acc*dt;
-  me.speed=Math.max(-cfg.max*0.4,Math.min(cfg.max,me.speed));
+  me.speed=Math.max(-cfg.max*0.4,Math.min(cfg.max*bf,me.speed));
   me.speed*=Math.max(0,1-dt*0.9);
   var steer=0;
   if(keys["KeyA"]||keys["ArrowLeft"])steer=1;
@@ -429,19 +457,26 @@ function droneCamPose(out){
   out.quaternion.setFromRotationMatrix(m.lookAt(out.position,new THREE.Vector3(p.x,p.y+3,p.z),new THREE.Vector3(0,1,0)));
   return out;
 }
+function lookDir(baseH,yaw,pitch){
+  var a=baseH+yaw,cp=Math.cos(pitch);
+  return new THREE.Vector3(Math.sin(a)*cp,Math.sin(pitch),Math.cos(a)*cp);
+}
 function driveCamPose(out){
   var f=carForward();
   if(pov==="first"){
     out.position.copy(car.position).addScaledVector(f,0.3).add(new THREE.Vector3(0,1.42,0));
+    var dir=lookDir(drive.heading,camYaw,camPitch);
     var m0=new THREE.Matrix4();
     out.quaternion.setFromRotationMatrix(m0.lookAt(out.position,
-      car.position.clone().addScaledVector(f,12).add(new THREE.Vector3(0,1.4,0)),new THREE.Vector3(0,1,0)));
+      out.position.clone().addScaledVector(dir,12),new THREE.Vector3(0,1,0)));
     return out;
   }
-  out.position.copy(car.position).addScaledVector(f,-10.5).add(new THREE.Vector3(0,4.3,0));
+  var a=drive.heading+camYaw;
+  var rot=new THREE.Vector3(Math.sin(a),0,Math.cos(a));
+  out.position.copy(car.position).addScaledVector(rot,-10.5).add(new THREE.Vector3(0,4.3+camPitch*5,0));
   var m=new THREE.Matrix4();
   out.quaternion.setFromRotationMatrix(m.lookAt(out.position,
-    car.position.clone().addScaledVector(f,8).add(new THREE.Vector3(0,1.7,0)),new THREE.Vector3(0,1,0)));
+    car.position.clone().addScaledVector(rot,8).add(new THREE.Vector3(0,1.7,0)),new THREE.Vector3(0,1,0)));
   return out;
 }
 function meCamPose(out){
@@ -450,39 +485,123 @@ function meCamPose(out){
   if(pov==="first"){
     var fwdOff=(mode==="boat")?0.9:0.4;
     out.position.copy(me.pos).add(new THREE.Vector3(0,cfg.eye,0)).addScaledVector(f,fwdOff);
+    var dir=lookDir(me.heading,camYaw,camPitch);
     var m0=new THREE.Matrix4();
     out.quaternion.setFromRotationMatrix(m0.lookAt(out.position,
-      me.pos.clone().addScaledVector(f,12).add(new THREE.Vector3(0,cfg.eye-0.2,0)),new THREE.Vector3(0,1,0)));
+      out.position.clone().addScaledVector(dir,12),new THREE.Vector3(0,1,0)));
     return out;
   }
-  out.position.copy(me.pos).addScaledVector(f,-cfg.back).add(new THREE.Vector3(0,cfg.up,0));
+  var a=me.heading+camYaw;
+  var rot=new THREE.Vector3(Math.sin(a),0,Math.cos(a));
+  out.position.copy(me.pos).addScaledVector(rot,-cfg.back).add(new THREE.Vector3(0,cfg.up+camPitch*3,0));
+  var la=mode==="boat"?0.8:1.5;
   var m=new THREE.Matrix4();
   out.quaternion.setFromRotationMatrix(m.lookAt(out.position,
-    me.pos.clone().addScaledVector(f,4).add(new THREE.Vector3(0,mode==="boat"?0.8:1.5,0)),new THREE.Vector3(0,1,0)));
+    me.pos.clone().addScaledVector(rot,4).add(new THREE.Vector3(0,la,0)),new THREE.Vector3(0,1,0)));
   return out;
 }
 function cableCamPose(out){
   var cb=CITY._cable;
   var cab=cb.up[0];
   var dir=cb.B.clone().sub(cb.A).normalize();
-  var side=new THREE.Vector3().crossVectors(dir,new THREE.Vector3(0,1,0)).normalize();
-  var p=cab.g.position.clone().add(new THREE.Vector3(0,4.5,0)).addScaledVector(side,9);
-  out.position.copy(p);
+  var h=Math.atan2(dir.x,dir.z);
+  if(pov==="first"){
+    // 乘坐在轿厢内：眼睛位于乘员舱中心略上
+    out.position.copy(cab.g.position).add(new THREE.Vector3(0,-2.35,0));
+    var dir2=lookDir(h,camYaw,camPitch);
+    var m0=new THREE.Matrix4();
+    out.quaternion.setFromRotationMatrix(m0.lookAt(out.position,
+      out.position.clone().addScaledVector(dir2,14),new THREE.Vector3(0,1,0)));
+    return out;
+  }
+  // 第三人称：吊在轿厢斜后方跟拍
+  var a=h+camYaw;
+  out.position.copy(cab.g.position).add(new THREE.Vector3(-Math.sin(a)*6.5,1.6+camPitch*3,-Math.cos(a)*6.5));
+  var tgt=cab.g.position.clone().addScaledVector(lookDir(h,camYaw,0),7).add(new THREE.Vector3(0,-1.2,0));
   var m=new THREE.Matrix4();
-  out.quaternion.setFromRotationMatrix(m.lookAt(p,
-    cab.g.position.clone().addScaledVector(dir,6).add(new THREE.Vector3(0,1,0)),new THREE.Vector3(0,1,0)));
+  out.quaternion.setFromRotationMatrix(m.lookAt(out.position,tgt,new THREE.Vector3(0,1,0)));
   return out;
 }
 var _pose={position:new THREE.Vector3(),quaternion:new THREE.Quaternion()};
 
-function exitCable(){
+function exitCable(toWalk){
   if(mode!=="cable")return;
-  var cab=CITY._cable.up[0].g.position;
-  drone.target.set(cab.x,cab.y,cab.z);
-  drone.tY=cab.y;
+  var cb=CITY._cable,cab=cb.up[0];
+  var cp=cab.g.position;
+  // 靠近山下站：下车步行（索道站前广场）
+  if(toWalk&&cp.distanceTo(cb.A)<32){
+    switchMode("walk");
+    if(mode!=="walk")return;
+    me.pos.set(388,0,64);me.heading=Math.PI/2;me.speed=0;
+    window.GTA&&window.GTA.toast("已抵达紫金山索道站前",2200);
+    return;
+  }
+  // 空中离开：转为无人机环绕当前轿厢
+  drone.target.set(cp.x,cp.y,cp.z);
+  drone.tY=cp.y;
   drone.tRadius=90;drone.tPhi=0.9;
   switchMode("drone");
 }
+
+/* ============ 情境交互（E 键：上下载具 / 购买美食） ============ */
+var interact=null;
+var buffUntil=0;                 // 美食饱腹 buff 到期时间
+var _tipCache="";
+function buyFood(st){
+  if(window.GTA&&window.GTA.spend(st.price,"美食 · "+st.name)){
+    window.NJAUDIO&&window.NJAUDIO.sfx("eat");
+    buffUntil=performance.now()+60000;
+    window.GTA&&window.GTA.toast("吃了一份"+st.name+" · 60 秒移速 +15%",3200);
+  }
+}
+function updateInteract(){
+  interact=null;
+  var px,pz;
+  if(mode==="drive"){px=car.position.x;pz=car.position.z;}
+  else if(mode==="drone"||mode==="cable"){px=1e9;pz=1e9;}
+  else{px=me.pos.x;pz=me.pos.z;}
+  function set(label,fn,kind){interact={label:label,fn:fn,kind:kind||mode};}
+  if(mode==="drive"){
+    set("下车",function(){
+      var side=carForward().cross(new THREE.Vector3(0,1,0)).multiplyScalar(-2.6);
+      switchMode("walk");
+      if(mode!=="walk")return;          // 过渡初期被拦：跳过本次
+      me.pos.set(car.position.x+side.x,0,car.position.z+side.z);
+      me.heading=drive.heading;me.speed=0;
+    });
+  }else if(mode==="boat"){
+    if(Math.hypot(px-150,pz+366)<9)set("下船",function(){switchMode("walk");});
+  }else if(mode==="cable"){
+    set("下缆车",function(){exitCable(true);});
+  }else if(mode==="walk"||mode==="bike"||mode==="ebike"){
+    var stalls=CITY.stalls||[];
+    for(var i=0;i<stalls.length;i++){
+      var s=stalls[i];
+      if(Math.hypot(px-s.x,pz-s.z)<2.9){
+        (function(st){
+          set("品尝 "+st.name+"（¥"+st.price+"）",function(){buyFood(st);},"walk");
+        })(s);
+        break;
+      }
+    }
+    if(!interact&&mode==="walk"){
+      if(Math.hypot(px-car.position.x,pz-car.position.z)<4.4)
+        set("上车",function(){switchMode("drive");});
+      else if(Math.hypot(px-151,pz+372)<7)
+        set("登上游船",function(){switchMode("boat");});
+      else if(Math.hypot(px-388,pz-76)<9.6)
+        set("乘索道缆车",function(){switchMode("cable");});
+    }
+  }
+  var tip=$("interact-tip");
+  if(!tip)return;
+  var label=interact?"[E] "+interact.label:"";
+  if(label!==_tipCache){_tipCache=label;
+    if(label){tip.textContent=label;tip.classList.add("on");}
+    else tip.classList.remove("on");
+  }
+}
+
 function togglePov(){
   pov=pov==="first"?"third":"first";
   var b=$("pov-toggle");
@@ -545,23 +664,29 @@ function setBtn(m2){
 function setTips(){
   var t={
     drone:"拖动旋转 · 滚轮缩放 · WASD 平移 · R/F 升降 · Q/E 环绕 · C 自动环绕",
-    drive:"W/S 油门刹车 · A/D 转向 · 空格急停 · V 切换第一/第三视角",
-    walk:"W/S 前进后退 · A/D 转向 · Shift 加速 · V 切换视角 · P 手机拍照",
-    bike:"W/S 踩踏/刹车 · A/D 转向 · V 切换第一/第三视角",
-    ebike:"W/S 电门/刹车 · A/D 转向 · V 切换第一/第三视角",
-    cable:"索道缆车乘坐中 · 按 WASD 或点击其他视角按钮下车",
-    boat:"游船：W/S 前进后退 · A/D 转向 · 仅限玄武湖水域 · V 切换视角"
+    drive:"W/S 油门刹车 · A/D 转向 · E 下车 · R 换电台 · V 视角 · 鼠标拖动环视",
+    walk:"W/S 前进后退 · A/D 转向 · E 上车/登船/乘缆车/买小吃 · Shift 加速 · P 拍照",
+    bike:"W/S 踩踏/刹车 · A/D 转向 · R 换电台 · V 切换第一/第三视角",
+    ebike:"W/S 电门/刹车 · A/D 转向 · R 换电台 · V 切换第一/第三视角",
+    cable:"缆车乘坐中 · 鼠标拖动环视 · V 第一/第三视角 · E 下缆车 · R 换电台",
+    boat:"游船：W/S 前进后退 · A/D 转向 · E 靠岸下船 · R 换电台 · V 视角"
   };
   $("tips").textContent=t[mode]||"";
 }
 
 function switchMode(m2){
-  if(mode===m2||camTrans.active)return;
+  if(mode===m2)return;
+  if(camTrans.active){
+    // 过渡中后段允许打断（E 键快速上下载具不被吞）
+    if(camTrans.t<0.35)return;
+    camTrans.active=false;
+  }
   camTrans.active=true;camTrans.t=0;
   camTrans.fromP.copy(camera.position);
   camTrans.fromQ.copy(camera.quaternion);
   var prev=mode;
   mode=m2;
+  camYaw=0;camPitch=0;              // 切换视角时重置鼠标环视偏移
   car.visible=true; // 车辆常驻（未驾驶时视为路边停车）
   if(m2==="drive"){
     drive.heading=car.rotation.y;drive.speed=0;
@@ -571,7 +696,8 @@ function switchMode(m2){
     boatAv.g.visible=(pov==="third");
   }else if(m2==="walk"||m2==="bike"||m2==="ebike"){
     if(prev==="drone"||prev==="cable"){
-      me.pos.set(20,0,27);me.heading=Math.PI/2;
+      // 默认落位：新街口西侧路边（与座驾相邻）
+      me.pos.set(22,0,18);me.heading=Math.PI/2;
     }else if(prev==="drive"){
       me.pos.set(car.position.x,0,car.position.z);
       me.heading=drive.heading;
@@ -594,6 +720,7 @@ function switchMode(m2){
   if(prev==="boat"&&m2!=="boat")boatAv.g.visible=false;
   setBtn(m2);
   setTips();
+  window.NJAUDIO&&window.NJAUDIO.radioForMode(m2);   // 载具进出联动电台
 }
 $("m-drone").onclick=function(){switchMode("drone");};
 $("m-drive").onclick=function(){switchMode("drive");};
@@ -639,6 +766,13 @@ function updateCamera(dt){
       drone.target.z+=(-dx*Math.sin(ang)+dz*Math.cos(ang))*sp;
       drone.target.x=Math.max(-720,Math.min(720,drone.target.x));
       drone.target.z=Math.max(-720,Math.min(720,drone.target.z));
+    }
+  }else if(!dragging){
+    // 行进中视角缓慢回正（鼠标环视后自动回中）
+    var spd=(mode==="drive")?Math.abs(drive.speed):Math.abs(me.speed);
+    if(spd>1.5){
+      var rc=Math.min(1,dt*1.1);
+      camYaw*=1-rc;camPitch*=1-rc;
     }
   }
   if(camTrans.active){
@@ -926,13 +1060,20 @@ var clock=new THREE.Clock();
 function loop(){
   requestAnimationFrame(loop);
   var dt=Math.min(0.05,clock.getDelta());
+  window.__NJ3D.frames++;
   updateCar(dt);
   if(mode==="walk"||mode==="bike"||mode==="ebike"||mode==="boat")updateMe(dt);
+  updateInteract();
   updateEnv(dt);
   updateCamera(dt);
+  // 玩家实体位置（供 NPC 避让/动态碰撞使用）
+  if(mode==="drive")window.__NJPLAYER={x:car.position.x,z:car.position.z,on:true};
+  else if(mode==="drone"||mode==="cable")window.__NJPLAYER={x:1e9,z:1e9,on:false};
+  else window.__NJPLAYER={x:me.pos.x,z:me.pos.z,on:true};
   if(window.GTA)window.GTA.tick(dt,{
     mode:mode,mePos:me.pos,meHeading:me.heading,
-    carPos:car.position,carHeading:drive.heading,droneTgt:drone.target,hour:env.hour});
+    carPos:car.position,carHeading:drive.heading,droneTgt:drone.target,hour:env.hour,
+    cablePos:(mode==="cable")?CITY._cable.up[0].g.position:null});
   CITY.update(dt,{env:env,nightF:Math.max(0,1-Math.max(0,Math.min(1,Math.sin(((env.hour-6)/12)*Math.PI)*1.7))*1.3),hour:env.hour,mode:mode});
   postUni.time.value+=dt;
   renderer.setRenderTarget(rt);
@@ -958,6 +1099,9 @@ window.__NJ3D={env:env,renderer:renderer,scene:scene,camera:camera,city:CITY,pos
   switchMode:function(m2){switchMode(m2);},
   takePhoto:takePhoto,
   photos:window.__NJ3D&&window.__NJ3D.photos||[],
+  interact:function(){return interact?interact.label:null;},
+  camTransActive:function(){return camTrans.active;},
+  frames:0,
   teleport:function(x,z,h){
     car.position.set(x,0.06,z);drive.heading=h;car.rotation.y=h;
     me.pos.set(x,0,z);me.heading=h;

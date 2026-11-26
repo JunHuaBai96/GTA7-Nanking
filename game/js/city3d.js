@@ -192,6 +192,8 @@ CITY.create=function(scene,renderer){
   var litMats=[],lampMats=[],signMats=[],snowables=[],wetMats=[];
   var COLLIDERS=[]; // 碰撞体（圆）
   var BOXES=[];    // 碰撞体（矩形 AABB，精确防穿楼）
+  var DYN=[];      // 动态碰撞体（NPC 车辆，每帧由 update 重建）
+  var steamSprites=[]; // 美食摊蒸汽（update 中动画）
   var PEND=[];
   var group=new THREE.Group();scene.add(group);
 
@@ -1761,7 +1763,8 @@ CITY.create=function(scene,renderer){
       return true;
     };
 
-    COLLIDERS.push({x:120,z:-480,r:200});
+    // 湖面禁行碰撞圈；ex 为码头豁免区（步行可到达栈桥登船）
+    COLLIDERS.push({x:120,z:-480,r:200,ex:[142,164,-386,-356]});
   })();
   /* 鸡鸣寺：黄墙伽蓝 + 药师佛塔 */
   (function(){
@@ -1922,6 +1925,17 @@ CITY.create=function(scene,renderer){
   var signal={ns:"green",ew:"red",t:0};
   CITY.signal=signal;
   CITY.update=function(dt,ctx){
+    // 玩家实体位置（scene3d 每帧写入），供 NPC 避让判定
+    var PLAYER=window.__NJPLAYER||{x:1e9,z:1e9,on:false};
+    // 动态碰撞体每帧重建（NPC 车辆位置，供玩家碰撞检测）
+    DYN.length=0;
+    // 美食摊蒸汽升腾
+    var st3=performance.now()*0.001;
+    for(var s7=0;s7<steamSprites.length;s7++){
+      var sp7=steamSprites[s7];
+      sp7.material.opacity=0.16+0.14*Math.sin(st3*2.1+s7*1.7);
+      sp7.position.y=3.2+0.22*Math.sin(st3*1.3+s7);
+    }
     // 路灯地面光斑
     poolMat.opacity=Math.min(1,ctx.nightF*1.1)*0.2*(1-ctx.env.snow*0.5);
 
@@ -1946,6 +1960,10 @@ CITY.create=function(scene,renderer){
     for(var i=0;i<peds.length;i++){
       var p=peds[i];
       if(p.still){p.phase+=dt*0.6;p.g.position.y=p.baseY+Math.sin(p.phase)*0.008;continue;}
+      // 玩家走近时行人停步让路（防人穿人）
+      if(PLAYER.on&&Math.abs(p.g.position.x-PLAYER.x)<1.7&&Math.abs(p.g.position.z-PLAYER.z)<1.7){
+        p.g.position.y=p.baseY+Math.abs(Math.sin(p.phase))*0.02;continue;
+      }
       p.phase+=dt*p.speed*2.6;
       var step=p.dir*p.speed*dt;
       if(p.axis==="z"){
@@ -1996,6 +2014,7 @@ CITY.create=function(scene,renderer){
     // 通用车辆推进（跟车 + 红灯 + 位移定向）
     function stepVehicle(v,gapMin,brake,acc,stopGap,dt,ride){
       var tgt=v.sp;
+      if(v._pblock)tgt=0;                     // 玩家挡路：急停防穿模
       if(v.rt){
         // 环岛转弯段限速（进入路口范围减速至巡航的 45%），转向更从容自然
         var tcx=v.ax==="x"?44:12;
@@ -2059,9 +2078,12 @@ CITY.create=function(scene,renderer){
         var c2=arr[j2];
         c2._ahead=j2>0?arr[j2-1]:null;
         var px=c2.g.position.x,pz=c2.g.position.z;
+        var pdx=px-PLAYER.x,pdz=pz-PLAYER.z;
+        c2._pblock=PLAYER.on&&(pdx*pdx+pdz*pdz)<81;   // 9m 内有玩家：刹停
         stepVehicle(c2,4.6,13,7,15,dt,false);
         c2.wheels.forEach(function(w){w.rotation.x+=c2.v*dt*2;});
         orient(c2,dt,px,pz);
+        DYN.push({x:c2.g.position.x,z:c2.g.position.z,r:1.5});
         if(c2.g.userData.hl)c2.g.userData.hl.emissiveIntensity=ctx.nightF*1.8;
       }
     }
@@ -2080,12 +2102,15 @@ CITY.create=function(scene,renderer){
         var rd2=rarr[rj2];
         rd2._ahead=rj2>0?rarr[rj2-1]:null;
         var px2=rd2.g.position.x,pz2=rd2.g.position.z;
+        var rdx=px2-PLAYER.x,rdz=pz2-PLAYER.z;
+        rd2._pblock=PLAYER.on&&(rdx*rdx+rdz*rdz)<49;  // 骑行者遇玩家 7m 刹停
         stepVehicle(rd2,2.4,11,5,16,dt,true);
         rd2.ph+=rd2.v*dt*2.4;
         var kick=Math.sin(rd2.ph)*0.5;
         rd2.legL.rotation.x=0.5+kick;rd2.legR.rotation.x=-0.3-kick;
         rd2.wheels.forEach(function(w){w.rotation.x+=rd2.v*dt*3;});
         orient(rd2,dt,px2,pz2,true);
+        DYN.push({x:rd2.g.position.x,z:rd2.g.position.z,r:0.8});
       }
     }
 
@@ -2161,9 +2186,83 @@ CITY.create=function(scene,renderer){
     }
   })();
 
+  /* ============ 南京街头美食摊（消费场景） ============ */
+  var STALL_DEFS=[
+    {x:58,z:24,n:"鸭血粉丝汤",en:"DUCK VERMICELLI SOUP",p:18,c:"#c04a3a"},
+    {x:112,z:56,n:"盐水鸭",en:"NANJING SALTED DUCK",p:28,c:"#d8a83a"},
+    {x:372,z:60,n:"鸡鸣寺素面",en:"TEMPLE NOODLE",p:16,c:"#7a9a5a"},
+    {x:50,z:178,n:"桂花糖芋苗",en:"OSMANTHUS TARO",p:12,c:"#a85a8e"},
+    {x:238,z:106,n:"梅花糕",en:"PLUM CAKE",p:10,c:"#c96a8e"}
+  ];
+  (function(){
+    function bad(px,pz){
+      for(var i=0;i<BOXES.length;i++){var b=BOXES[i];
+        if(px>b.x0-3.2&&px<b.x1+3.2&&pz>b.z0-3.2&&pz<b.z1+3.2)return true;}
+      for(var j=0;j<COLLIDERS.length;j++){var c2=COLLIDERS[j];
+        if(Math.hypot(px-c2.x,pz-c2.z)<c2.r+3.2)return true;}
+      return false;
+    }
+    function spot(x,z){
+      if(!bad(x,z))return[x,z];
+      for(var r=2;r<46;r+=2.4){
+        for(var a=0;a<8;a++){
+          var nx=x+r*Math.cos(a*0.785),nz=z+r*Math.sin(a*0.785);
+          if(!bad(nx,nz))return[nx,nz];
+        }
+      }
+      return[x,z];
+    }
+    CITY.stalls=[];
+    var steamTex=(function(){
+      var c=document.createElement("canvas");c.width=c.height=64;
+      var g=c.getContext("2d");
+      var gr=g.createRadialGradient(32,32,4,32,32,32);
+      gr.addColorStop(0,"rgba(255,255,255,0.75)");gr.addColorStop(1,"rgba(255,255,255,0)");
+      g.fillStyle=gr;g.fillRect(0,0,64,64);
+      return new THREE.CanvasTexture(c);
+    })();
+    STALL_DEFS.forEach(function(d){
+      var sp=spot(d.x,d.z);
+      var g=new THREE.Group();
+      var cart=new THREE.Mesh(new THREE.BoxGeometry(2.8,1.5,1.7),
+        new THREE.MeshStandardMaterial({color:0x8a5a2e,roughness:0.8}));
+      cart.position.y=0.85;cart.castShadow=true;g.add(cart);
+      var counter=new THREE.Mesh(new THREE.BoxGeometry(2.9,0.12,2.0),
+        new THREE.MeshStandardMaterial({color:0xd8cfc0,roughness:0.6}));
+      counter.position.y=1.68;g.add(counter);
+      var post1=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,2.2,6),
+        new THREE.MeshStandardMaterial({color:0x5a4634,roughness:0.8}));
+      post1.position.set(-1.2,2.6,0.7);g.add(post1);
+      var post2=post1.clone();post2.position.x=1.2;g.add(post2);
+      var awn=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.1,2.4),
+        new THREE.MeshStandardMaterial({color:d.c,roughness:0.7}));
+      awn.position.y=3.6;awn.rotation.x=0.16;awn.castShadow=true;g.add(awn);
+      var pot=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.42,0.5,10),
+        new THREE.MeshStandardMaterial({color:0x3a3a3a,metalness:0.5,roughness:0.4}));
+      pot.position.set(0.6,2.0,0.3);g.add(pot);
+      var steam=new THREE.Sprite(new THREE.SpriteMaterial({map:steamTex,transparent:true,opacity:0.28,depthWrite:false}));
+      steam.scale.set(1.4,2.2,1);steam.position.set(0.6,3.2,0.3);g.add(steam);
+      steamSprites.push(steam);
+      var sg=texSign({w:384,h:96,bg:d.c,t1:d.n+" ¥"+d.p,t2:d.en,fg:"#fff4dc",fg2:"#f4e2c0",s1:40,s2:14});
+      var sign=new THREE.Mesh(new THREE.PlaneGeometry(3.2,0.8),
+        new THREE.MeshStandardMaterial({map:sg,emissive:0xffffff,emissiveMap:sg,emissiveIntensity:0.25,roughness:0.6}));
+      sign.position.set(0,4.35,1.0);sign.rotation.x=-0.16;g.add(sign);
+      lampMats.push(sign.material);
+      var lamp=new THREE.Mesh(new THREE.SphereGeometry(0.16,8,6),
+        new THREE.MeshStandardMaterial({color:0xffd9a0,emissive:0xffb060,emissiveIntensity:0.1}));
+      lamp.position.set(-1.2,3.3,0.7);g.add(lamp);
+      lampMats.push(lamp.material);
+      g.position.set(sp[0],0,sp[1]);
+      add(g);
+      COLLIDERS.push({x:sp[0],z:sp[1],r:1.9});
+      CITY.stalls.push({x:sp[0],z:sp[1],name:d.n,price:d.p});
+    });
+  })();
+
   CITY.mats={lit:litMats,lamp:lampMats,sign:signMats,snow:snowables,wet:wetMats};
   CITY.colliders=COLLIDERS;
   CITY.boxes=BOXES;
+  CITY.dyn=DYN;
   CITY.road=ROAD;
   return CITY;
 };

@@ -202,3 +202,25 @@
   #minimap{width:230px;height:165px}
   #gta-hud{bottom:190px}
 }
+
+/* ---------- E 键情境交互提示 ---------- */
+#interact-tip{position:fixed;bottom:15%;left:50%;transform:translateX(-50%) translateY(6px);
+  z-index:70;padding:10px 26px;border-radius:26px;font-size:14px;letter-spacing:.08em;
+  color:#ffe8b0;background:rgba(10,14,24,.82);border:1px solid rgba(232,196,118,.5);
+  opacity:0;pointer-events:none;transition:.18s;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+#interact-tip.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- 翻牌乐园 ---------- */
+.game-face{display:flex;flex-direction:column;flex:1;min-height:0;padding:10px 14px}
+#ph-game-status{font-size:11.5px;color:#aeb8c9;text-align:center;padding:4px 0 8px}
+#ph-game-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;
+  align-content:center;overflow:hidden}
+.gcard{aspect-ratio:1/1;border-radius:8px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;
+  font-size:22px;cursor:pointer;transition:.15s;user-select:none}
+.gcard:hover{background:rgba(255,255,255,.16)}
+.gcard.open{background:rgba(255,210,62,.18);border-color:rgba(255,210,62,.5);transform:scale(1.04)}
+.gcard.done{background:rgba(143,230,168,.16);border-color:rgba(143,230,168,.45);opacity:.75;cursor:default}
+#ph-game-start{margin-top:10px;padding:10px;border-radius:12px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#ffd23e,#e8a43e);color:#221803;font-weight:800;font-size:13px;
+  letter-spacing:.1em}

@@ -183,10 +183,9 @@ function bump(){
 function checkMission(mode,px,pz){
   if(!started||completeAll)return;
   var m=MISSIONS[mi];
-  var ok=(mode!=="drone"&&mode!=="cable")||mi===3;
-  // 索道任务允许 cable 模式；其余任务需地面/水面载具或步行
+  // 索道任务（index 3）允许任意模式判定（乘缆车/无人机抵达均有效）
+  var ok=(mi===3)||(mode!=="drone"&&mode!=="cable");
   if(!ok)return;
-  if(mode==="drone")return;
   var d=Math.hypot(px-m.x,pz-m.z);
   if(d<m.r){
     money+=m.pay;
@@ -232,6 +231,7 @@ function tick(dt,s){
   var px=0,pz=0,heading=0;
   if(s.mode==="drive"){px=s.carPos.x;pz=s.carPos.z;heading=s.carHeading;}
   else if(s.mode==="drone"){px=s.droneTgt.x;pz=s.droneTgt.z;}
+  else if(s.mode==="cable"){px=s.cablePos?s.cablePos.x:px;pz=s.cablePos?s.cablePos.z:pz;}
   else{px=s.mePos.x;pz=s.mePos.z;heading=s.meHeading;}
   checkMission(s.mode,px,pz);
   if(frame%2===0)drawMap(px,pz,heading);
@@ -241,13 +241,16 @@ function tick(dt,s){
 function startGame(){
   started=true;
   $("boot").classList.add("off");
+  window.NJAUDIO&&window.NJAUDIO.unlock();       // 用户手势内解锁音频
+  // 主人公开局：步行落在新街口，座驾就在身旁（E 键上车）
+  if(window.__NJ3D)window.__NJ3D.switchMode("walk");
   if(completeAll){
     refreshMission();
     toast("欢迎回到南京 · 自由模式",3200);
   }else{
     refreshMission();
     placeBeacon(MISSIONS[mi]);
-    setTimeout(function(){toast("跟随金色信标完成任务 · 按 TAB 打开手机",4200);},800);
+    setTimeout(function(){toast("跟随金色信标 · 按 E 上下车/船/缆车 · TAB 打开手机",4600);},800);
   }
 }
 
@@ -273,7 +276,19 @@ window.GTA={
   pay:function(v,label){
     money+=v;refreshMoney();save();
     toast((label||"收入")+"  +"+fmtMoney(v),2800);
+    window.NJAUDIO&&window.NJAUDIO.sfx("cash");
   },
+  spend:function(v,label){
+    if(money<v){
+      toast("余额不足（需 ¥"+v+"）· 先去做任务赚点钱",2400);
+      window.NJAUDIO&&window.NJAUDIO.sfx("deny");
+      return false;
+    }
+    money-=v;refreshMoney();save();
+    if(label)toast(label+"  -"+fmtMoney(v),2600);
+    return true;
+  },
+  getMoney:function(){return money;},
   isStarted:function(){return started;},
   mission:function(){return completeAll?null:MISSIONS[mi];}
 };
